@@ -40,8 +40,10 @@ class User(UserBase):
 class InvoiceCreate(BaseModel):
     product: str
 
-class Invoice(InvoiceCreate):
+class InvoiceDelete(BaseModel):
     id: int
+
+class Invoice(InvoiceCreate, InvoiceDelete):
 
     class Config:
         orm_mode = True
