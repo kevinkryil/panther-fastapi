@@ -7,6 +7,7 @@ import shortuuid
 from sqlalchemy import DateTime, Boolean, Column, DateTime, ForeignKey, Integer, String, Float, func, Date
 from sqlalchemy.orm import relationship
 from database import Base
+from utils import *
 
 # class Invoice(Base):
 #     __tablename__ = "invoice"
@@ -32,6 +33,13 @@ def guid_gen(word="TMP"):
     except:
         return {'detail':'Error Found!'}
 
+class User(Base):
+    __tablename__ = "user"
+
+    guid = Column(String, index=True, primary_key=True, nullable=False)
+    email = Column(String(64), nullable=False)
+    password = Column(String(256), nullable=False)
+
 class BankDetail(Base):
     __tablename__ = "bankdetail"
 
@@ -53,7 +61,7 @@ class BankDetail(Base):
 class Client(Base):
     __tablename__ = "client"
 
-    id = Column(Integer, primary_key=True, index=True)
+    guid = Column(String, index=True, primary_key=True, nullable=False)
     client_company_name = Column(String(128), nullable=True)
     client_contact_name = Column(String(128), nullable=True)
     client_contact_designation = Column(String(128), nullable=True)
@@ -71,7 +79,7 @@ class Client(Base):
 class StockDetail(Base):
     __tablename__ = "stockdetail"
 
-    id = Column(Integer, primary_key=True, index=True)
+    guid = Column(String, index=True, primary_key=True, nullable=False)
     stock_name = Column(String(128), nullable=True)
 
     consignment = relationship("InvoiceConsignment", back_populates="stockdetail")
@@ -79,7 +87,7 @@ class StockDetail(Base):
 class StockBatchInfo(Base):
     __tablename__ = "stockbatchinfo"
 
-    id = Column(Integer, primary_key=True, index=True)
+    guid = Column(String, index=True, primary_key=True, nullable=False)
     stock_batch_description = Column(String(128), nullable=True)
     stock_qty = Column(Integer, nullable=True)
     stock_unit_price = Column(Float, nullable=True)
@@ -90,7 +98,7 @@ class StockBatchInfo(Base):
 class ItemDetail(Base):
     __tablename__ = "itemdetail"
 
-    id = Column(Integer, primary_key=True, index=True)
+    guid = Column(String, index=True, primary_key=True, nullable=False)
     invoice_item_qty = Column(Integer, nullable=True)
     invoice_item_taxable_value = Column(Float, nullable=True)
     invoice_item_tag_no  = Column(String(128), nullable=True)
@@ -101,7 +109,7 @@ class ItemDetail(Base):
 class TermsAndConditions(Base):
     __tablename__ = "termsandconditions"
 
-    id = Column(Integer, primary_key=True, index=True)
+    guid = Column(String, index=True, primary_key=True, nullable=False)
     tac_description  = Column(String(128), nullable=True)
 
     consignment = relationship("InvoiceConsignment", back_populates="tnc")
@@ -109,7 +117,7 @@ class TermsAndConditions(Base):
 class Signatory(Base):
     __tablename__ = "signatory"
 
-    id = Column(Integer, primary_key=True, index=True)
+    guid = Column(String, index=True, primary_key=True, nullable=False)
     signatory_name  = Column(String(128), nullable=True)
     signatory_img_b64  = Column(String(128), nullable=True)
 
@@ -118,7 +126,7 @@ class Signatory(Base):
 class Taxation(Base):
     __tablename__ = "taxation"
 
-    id = Column(Integer, primary_key=True, index=True)
+    guid = Column(String, index=True, primary_key=True, nullable=False)
     policy_no  = Column(String(128), nullable=True)
     freight_terms  = Column(String(128), nullable=True)
     tax_component_1  = Column(String(128), nullable=True)
@@ -148,13 +156,6 @@ class InvoiceConsignment(Base):
     __tablename__ = "consignment"
 
     id = Column(Integer, primary_key=True, index=True)
-    # client = Column(Integer, ForeignKey('client.id', ondelete="CASCADE"), nullable=False)
-    # stock_detail = Column(Integer, ForeignKey('stockdetail.id', ondelete="CASCADE"), nullable=False)
-    # stock_batch_info = Column(Integer, ForeignKey('stockbatchinfo.id', ondelete="CASCADE"), nullable=False)
-    # item_details = Column(Integer, ForeignKey('itemdetail.id', ondelete="CASCADE"), nullable=False)
-    # tnc = Column(Integer, ForeignKey('termsandconditions.id', ondelete="CASCADE"), nullable=False)
-    # signatory = Column(Integer, ForeignKey('signatory.id', ondelete="CASCADE"), nullable=False)
-    # taxation = Column(Integer, ForeignKey('taxation.id', ondelete="CASCADE"), nullable=False)
     reverse_charge = Column(Boolean, nullable=True)
     is_cancelled = Column(Boolean, nullable=True)
     cancellation_reason  = Column(String(128), nullable=True)
@@ -193,20 +194,21 @@ class InvoiceConsignment(Base):
 
     bank_detail_id = Column(String, ForeignKey('bankdetail.guid',ondelete='CASCADE'), nullable=True)
     bankdetail = relationship("BankDetail", back_populates='consignment')
-    client_id = Column(Integer, ForeignKey('client.id', ondelete="CASCADE"), nullable=True)
+    client_id = Column(String, ForeignKey('client.guid', ondelete="CASCADE"), nullable=True)
     client = relationship("Client", back_populates='consignment')
-    stockdetail_id = Column(Integer, ForeignKey('stockdetail.id', ondelete="CASCADE"), nullable=True)
+    stockdetail_id = Column(String, ForeignKey('stockdetail.guid', ondelete="CASCADE"), nullable=True)
     stockdetail = relationship("StockDetail", back_populates='consignment')
-    stockbatchinfo_id = Column(Integer, ForeignKey('stockbatchinfo.id', ondelete="CASCADE"), nullable=True)
+    stockbatchinfo_id = Column(String, ForeignKey('stockbatchinfo.guid', ondelete="CASCADE"), nullable=True)
     stockbatchinfo = relationship("StockBatchInfo", back_populates='consignment')
-    itemdetail_id = Column(Integer, ForeignKey('itemdetail.id', ondelete="CASCADE"), nullable=True)
+    itemdetail_id = Column(String, ForeignKey('itemdetail.guid', ondelete="CASCADE"), nullable=True)
     itemdetail = relationship("ItemDetail", back_populates='consignment')
-    tnc_id = Column(Integer, ForeignKey('termsandconditions.id', ondelete="CASCADE"), nullable=True)
+    tnc_id = Column(String, ForeignKey('termsandconditions.guid', ondelete="CASCADE"), nullable=True)
     tnc = relationship("TermsAndConditions", back_populates='consignment')
-    signatory_id = Column(Integer, ForeignKey('signatory.id', ondelete="CASCADE"), nullable=True)
+    signatory_id = Column(String, ForeignKey('signatory.guid', ondelete="CASCADE"), nullable=True)
     signatory = relationship("Signatory", back_populates='consignment')
-    taxation_id = Column(Integer, ForeignKey('taxation.id', ondelete="CASCADE"), nullable=True)
+    taxation_id = Column(String, ForeignKey('taxation.guid', ondelete="CASCADE"), nullable=True)
     taxation = relationship("Taxation", back_populates='consignment')
+
     # product1 = relationship("Product", back_populates='consignment')
     # product2 = relationship("Product", back_populates='consignment')
     # product3 = relationship("Product", back_populates='consignment')

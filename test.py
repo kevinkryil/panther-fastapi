@@ -2,9 +2,6 @@ from datetime import datetime
 import string
 import shortuuid
 
-
-
-
 def shortuuid_random():
     alphabet = string.ascii_lowercase + string.digits
     su = shortuuid.ShortUUID(alphabet=alphabet)
