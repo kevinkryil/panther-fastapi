@@ -128,6 +128,63 @@ class TaxationCreate(BaseModel):
     class Config:
         orm_mode = True
 
+class ProductCreate(BaseModel):
+    description : str 
+    vendor : str
+    batch_id :  str
+    cost_price : str
+    consignment : str
+    # purchase_date : str
+    class Config:
+        orm_mode = True
+
+class ConsignmentCreate(BaseModel):
+    # guid : str
+    reverse_charge : bool
+    is_cancelled : bool
+    cancellation_reason : str
+    # date
+    state : str
+    state_code : str
+    country : str
+    destination :str
+    rfq_item_no : str
+    rfq_item_name : str
+    goods_name : str
+    hsn_no : str
+    eway_no : str
+    po_no : str
+    # po_date : 
+    place_of_supply : str
+    lr_no : str
+    # lr_date
+    transporter_name : str
+    # preparation_date
+    # issue_date 
+    # product : str
+    # product1qty : float
+    # product2_guid : str
+    # product2qty : float
+    # product3_guid : str
+    # product3qty : float
+    # product4_guid : str
+    # product4qty : float
+    # product5_guid : str
+    # product5qty : float
+    # product6_guid : str
+    # product6qty : str
+    bank_detail_guid : str
+    # client_guid : str 
+    # stockdetail_guid : str
+    # stockbatchinfo_guid : str
+    # itemdetail_guid : str
+    # tnc_guid : str
+    # signatory_guid : str
+    # taxation_guid : str
+    class Config:
+        orm_mode = True
+
+
 class UserCreate(BaseModel):
     email : str
     password : str
@@ -151,3 +208,4 @@ class TokenData(BaseModel):
     email : str  
     class Config:
         orm_mode = True
+

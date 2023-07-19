@@ -511,4 +511,114 @@ def get_taxation_by_id(guid: str, db: Session = Depends(get_db)):
     return invoice
 ##################################################################################
 
+# @app.route("/api/product/create")
+# def create_product(request: schemas.ProductCreate, db: Session = Depends(get_db)):
+#     product = models.Product(guid=guid_gen(), **args)
 
+
+#################################################################################################
+
+@app.get("/api/invoice/consignment/all", tags=['Consignment'])
+def get_all_consignment(db: Session = Depends(get_db)):
+    return db.query(models.InvoiceConsignment).all()
+
+@app.put("/api/invoice/consignment/{guid}/update", response_model=schemas.ConsignmentCreate, status_code=status.HTTP_202_ACCEPTED, tags=['Consignment'])
+def update_consignment(guid: str, request: schemas.ConsignmentCreate, db: Session = Depends(get_db)):
+    invoice = db.query(models.InvoiceConsignment).get(guid)
+    if not invoice:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    if request.policy_no:
+        invoice.policy_no = request.policy_no
+    if request.reverse_charge:
+        invoice.reverse_charge = request.reverse_charge
+    if request.is_cancelled:
+        invoice.is_cancelled = request.is_cancelled
+    if request.cancellation_reason:
+        invoice.cancellation_reason = request.cancellation_reason
+    if request.state:
+        invoice.state = request.state
+    if request.state_code:
+        invoice.state_code = request.state_code
+    if request.country:
+        invoice.country = request.country
+    if request.destination:
+        invoice.destination = request.destination
+    if request.rfq_item_no:
+        invoice.rfq_item_no = request.rfq_item_no
+    if request.rfq_item_name:
+        invoice.rfq_item_name = request.rfq_item_name
+    if request.hsn_no:
+        invoice.hsn_no = request.hsn_no
+    if request.eway_no:
+        invoice.eway_no = request.eway_no
+    if request.po_no:
+        invoice.po_no = request.po_no
+    if request.place_of_supply:
+        invoice.place_of_supply = request.place_of_supply
+    if request.lr_no:
+        invoice.lr_no = request.lr_no
+    if request.transporter_name:
+        invoice.transporter_name = request.transporter_name
+
+    db.commit()
+    return invoice
+
+@app.post("/api/invoice/consignment/create", status_code=status.HTTP_201_CREATED, tags=['Consignment'])
+def create_consignment(request: schemas.ConsignmentCreate, db: Session = Depends(get_db)):
+    invoice = models.InvoiceConsignment(guid=guid_gen(), 
+                                    reverse_charge = request.reverse_charge,
+                                    is_cancelled = request.is_cancelled,
+                                    cancellation_reason = request.cancellation_reason,
+                                    state = request.state,
+                                    state_code = request.state_code,
+                                    country = request.country,
+                                    destination = request.destination,
+                                    rfq_item_no = request.rfq_item_no,
+                                    rfq_item_name = request.rfq_item_name,
+                                    goods_name = request.goods_name,
+                                    hsn_no = request.hsn_no,
+                                    eway_no = request.eway_no,
+                                    po_no = request.po_no,
+                                    place_of_supply = request.place_of_supply,
+                                    lr_no = request.lr_no,
+                                    transporter_name = request.transporter_name,
+                                    # product = request.product,
+                                    bank_detail_guid = request.bank_detail_guid,
+                                    # client_guid = request.client_guid,
+                                    # stockdetail_guid = request.stockdetail_guid,
+                                    # stockbatchinfo_guid = request.stockbatchinfo_guid,
+                                    # itemdetail_guid = request.itemdetail_guid,
+                                    # tnc_guid = request.tnc_guid,
+                                    # signatory_guid = request.signatory_guid,
+                                    # taxation_guid = request.taxation_guid
+                                        )
+    # invoice.bank_detail_guid = request.bank_detail_guid
+    if not db.query(models.InvoiceConsignment).filter(InvoiceConsignment.guid == request.guid).first():
+        try:
+            db.add(invoice)
+            db.commit()
+            db.refresh(invoice)
+            return invoice
+
+        except IntegrityError as ex:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT, detail=str(ex))
+    else:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,
+                            detail='This record already exists!')
+
+@app.delete("/api/invoice/consignment/{guid}/delete", tags=['Consignment'])
+def delete_consignment(guid: str, db: Session = Depends(get_db)):
+    invoice = db.query(models.InvoiceConsignment).filter(models.InvoiceConsignment.guid==guid).first()
+    if not invoice:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    db.query(models.InvoiceConsignment).filter(models.InvoiceConsignment.guid == guid).delete(synchronize_session=False)
+    db.commit()
+    return {'detail': 'Deleted Successfully!'}
+
+@app.get("/api/invoice/consignment/{guid}",  tags=['Consignment'])
+def get_consignment_by_id(guid: str, db: Session = Depends(get_db)):
+    invoice = db.query(models.InvoiceConsignment).get(guid)
+    if not invoice:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
+    return invoice

@@ -4,7 +4,7 @@ import string
 import uuid
 from pydantic import Field
 import shortuuid
-from sqlalchemy import DateTime, Boolean, Column, DateTime, ForeignKey, Integer, String, Float, func, Date
+from sqlalchemy import DateTime, Boolean, Column, DateTime, ForeignKey, Integer, String, Float, Table, func, Date
 from sqlalchemy.orm import relationship
 from database import Base
 from utils import *
@@ -33,12 +33,29 @@ def guid_gen(word="TMP"):
     except:
         return {'detail':'Error Found!'}
 
+tenant_user_association = Table(
+    'tenant_user_association',
+    Base.metadata,
+    Column('tenant_id', Integer, ForeignKey('tenant.id')),
+    Column('user_guid', String, ForeignKey('user.guid'))
+)
+
+class Tenant(Base):
+    __tablename__ = 'tenant'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(50), unique=True)
+    users = relationship('User', secondary=tenant_user_association, back_populates='tenant')
+
+
 class User(Base):
     __tablename__ = "user"
 
     guid = Column(String, index=True, primary_key=True, nullable=False)
     email = Column(String(64), nullable=False)
     password = Column(String(256), nullable=False)
+    tenant = relationship('Tenant', secondary=tenant_user_association, back_populates='users')
+
 
 class BankDetail(Base):
     __tablename__ = "bankdetail"
@@ -135,27 +152,36 @@ class Taxation(Base):
 
     consignment = relationship("InvoiceConsignment", back_populates="taxation")
 
-# class Product(Base):
-#     __tablename__ = "product"
+consignment_product_association = Table(
+    'consignment_product_association',
+    Base.metadata,
+    Column('consignment_guid', String, ForeignKey('consignment.guid')),
+    Column('product_guid', String, ForeignKey('product.guid'))
+)
 
-#     id = Column(Integer, primary_key=True, index=True)
-#     description = Column(String(128), nullable=True)
-#     vendor = Column(String(128), nullable=True)
-#     batch_id = Column(String(128), nullable=True)
-#     cost_price = Column(Float, nullable=True)
-#     purchase_date  = Column(Date, nullable=True)
+class Product(Base):
+    __tablename__ = "product"
 
-#     consignment = relationship("InvoiceConsignment", back_populates="product1")
-#     consignment = relationship("InvoiceConsignment", back_populates="product2")
-#     consignment = relationship("InvoiceConsignment", back_populates="product3")
-#     consignment = relationship("InvoiceConsignment", back_populates="product4")
-#     consignment = relationship("InvoiceConsignment", back_populates="product5")
-#     consignment = relationship("InvoiceConsignment", back_populates="product6")
+    guid = Column(String, index=True, primary_key=True, nullable=False)
+    description = Column(String(128), nullable=True)
+    vendor = Column(String(128), nullable=True)
+    batch_id = Column(String(128), nullable=True)
+    cost_price = Column(Float, nullable=True)
+    purchase_date  = Column(Date, nullable=True)
+
+    consignment = relationship('InvoiceConsignment', secondary=consignment_product_association, back_populates='product')
+
+    # consignment1 = relationship("InvoiceConsignment", back_populates="product1")
+    # consignment2 = relationship("InvoiceConsignment", back_populates="product2")
+    # consignment3 = relationship("InvoiceConsignment", back_populates="product3")
+    # consignment4 = relationship("InvoiceConsignment", back_populates="product4")
+    # consignment5 = relationship("InvoiceConsignment", back_populates="product5")
+    # consignment6 = relationship("InvoiceConsignment", back_populates="product6")
 
 class InvoiceConsignment(Base):
     __tablename__ = "consignment"
 
-    id = Column(Integer, primary_key=True, index=True)
+    guid = Column(String, index=True, primary_key=True, nullable=False)
     reverse_charge = Column(Boolean, nullable=True)
     is_cancelled = Column(Boolean, nullable=True)
     cancellation_reason  = Column(String(128), nullable=True)
@@ -177,48 +203,40 @@ class InvoiceConsignment(Base):
     transporter_name  = Column(String(128), nullable=True)
     preparation_date = Column(Date, nullable=True)
     issue_date = Column(Date, nullable=True)
-
-
-    # product1 = Column(Integer, ForeignKey('product.id', ondelete="CASCADE"), nullable=False)
-    # product1qty = Column(Float, nullable=True)
-    # product2 = Column(Integer, ForeignKey('product.id', ondelete="CASCADE"), nullable=True)
-    # product2qty = Column(Float, nullable=True)
-    # product3 = Column(Integer, ForeignKey('product.id', ondelete="CASCADE"), nullable=True)
-    # product3qty = Column(Float, nullable=True)
-    # product4 = Column(Integer, ForeignKey('product.id', ondelete="CASCADE"), nullable=True)
-    # product4qty = Column(Float, nullable=True)
-    # product5 = Column(Integer, ForeignKey('product.id', ondelete="CASCADE"), nullable=True)
-    # product5qty = Column(Float, nullable=True)
-    # product6 = Column(Integer, ForeignKey('product.id', ondelete="CASCADE"), nullable=True)
-    # product6qty = Column(Float, nullable=True)
-
-    bank_detail_id = Column(String, ForeignKey('bankdetail.guid',ondelete='CASCADE'), nullable=True)
-    bankdetail = relationship("BankDetail", back_populates='consignment')
-    client_id = Column(String, ForeignKey('client.guid', ondelete="CASCADE"), nullable=True)
-    client = relationship("Client", back_populates='consignment')
-    stockdetail_id = Column(String, ForeignKey('stockdetail.guid', ondelete="CASCADE"), nullable=True)
-    stockdetail = relationship("StockDetail", back_populates='consignment')
-    stockbatchinfo_id = Column(String, ForeignKey('stockbatchinfo.guid', ondelete="CASCADE"), nullable=True)
-    stockbatchinfo = relationship("StockBatchInfo", back_populates='consignment')
-    itemdetail_id = Column(String, ForeignKey('itemdetail.guid', ondelete="CASCADE"), nullable=True)
-    itemdetail = relationship("ItemDetail", back_populates='consignment')
-    tnc_id = Column(String, ForeignKey('termsandconditions.guid', ondelete="CASCADE"), nullable=True)
-    tnc = relationship("TermsAndConditions", back_populates='consignment')
-    signatory_id = Column(String, ForeignKey('signatory.guid', ondelete="CASCADE"), nullable=True)
-    signatory = relationship("Signatory", back_populates='consignment')
-    taxation_id = Column(String, ForeignKey('taxation.guid', ondelete="CASCADE"), nullable=True)
-    taxation = relationship("Taxation", back_populates='consignment')
-
-    # product1 = relationship("Product", back_populates='consignment')
-    # product2 = relationship("Product", back_populates='consignment')
-    # product3 = relationship("Product", back_populates='consignment')
-    # product4 = relationship("Product", back_populates='consignment')
-    # product5 = relationship("Product", back_populates='consignment')
-    # product6 = relationship("Product", back_populates='consignment')
-
-
-
+    product = relationship('Product', secondary=consignment_product_association, back_populates='consignment')
     
-
-
+    # product1_guid = Column(String, ForeignKey('product.guid', ondelete="CASCADE"), nullable=True)
+    # product1 = relationship("Product", back_populates='consignment1')
+    # product1qty = Column(Float, nullable=True)
+    # product2_guid = Column(String, ForeignKey('product.guid', ondelete="CASCADE"), nullable=True)
+    # product2 = relationship("Product", back_populates='consignment2')
+    # product2qty = Column(Float, nullable=True)
+    # product3_guid = Column(String, ForeignKey('product.guid', ondelete="CASCADE"), nullable=True)
+    # product3 = relationship("Product", back_populates='consignment3')
+    # product3qty = Column(Float, nullable=True)
+    # product4_guid = Column(String, ForeignKey('product.guid', ondelete="CASCADE"), nullable=True)
+    # product4 = relationship("Product", back_populates='consignment4')
+    # product4qty = Column(Float, nullable=True)
+    # product5_guid = Column(String, ForeignKey('product.guid', ondelete="CASCADE"), nullable=True)
+    # product5 = relationship("Product", back_populates='consignment5')
+    # product5qty = Column(Float, nullable=True)
+    # product6_guid = Column(String, ForeignKey('product.guid', ondelete="CASCADE"), nullable=True)
+    # product6 = relationship("Product", back_populates='consignment6')
+    # product6qty = Column(Float, nullable=True)
+    bank_detail_guid = Column(String, ForeignKey('bankdetail.guid',ondelete='CASCADE'), nullable=True)
+    bankdetail = relationship("BankDetail", back_populates='consignment')
+    client_guid = Column(String, ForeignKey('client.guid', ondelete="CASCADE"), nullable=True)
+    client = relationship("Client", back_populates='consignment')
+    stockdetail_guid = Column(String, ForeignKey('stockdetail.guid', ondelete="CASCADE"), nullable=True)
+    stockdetail = relationship("StockDetail", back_populates='consignment')
+    stockbatchinfo_guid = Column(String, ForeignKey('stockbatchinfo.guid', ondelete="CASCADE"), nullable=True)
+    stockbatchinfo = relationship("StockBatchInfo", back_populates='consignment')
+    itemdetail_guid = Column(String, ForeignKey('itemdetail.guid', ondelete="CASCADE"), nullable=True)
+    itemdetail = relationship("ItemDetail", back_populates='consignment')
+    tnc_guid = Column(String, ForeignKey('termsandconditions.guid', ondelete="CASCADE"), nullable=True)
+    tnc = relationship("TermsAndConditions", back_populates='consignment')
+    signatory_guid = Column(String, ForeignKey('signatory.guid', ondelete="CASCADE"), nullable=True)
+    signatory = relationship("Signatory", back_populates='consignment')
+    taxation_guid = Column(String, ForeignKey('taxation.guid', ondelete="CASCADE"), nullable=True)
+    taxation = relationship("Taxation", back_populates='consignment')
 
