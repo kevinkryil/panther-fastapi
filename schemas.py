@@ -1,4 +1,6 @@
+from typing import List
 from pydantic import BaseModel, EmailStr
+from datetime import date, datetime
 
 class InvoiceCreate(BaseModel):
     product: str
@@ -93,6 +95,7 @@ class StockDetailCreate(BaseModel):
         orm_mode = True
     
 class StockBatchInfoCreate(BaseModel):
+    batch_num : str
     stock_batch_description : str
     stock_qty : int
     stock_unit_price : float
@@ -132,18 +135,21 @@ class ProductCreate(BaseModel):
     description : str 
     vendor : str
     batch_id :  str
-    cost_price : str
-    consignment : str
-    # purchase_date : str
+    cost_price : float
+    # purchase_date : 
+    class Config:
+        orm_mode = True
+
+class ProductOut(ProductCreate):
+    guid : str
     class Config:
         orm_mode = True
 
 class ConsignmentCreate(BaseModel):
-    # guid : str
+    guid : str
     reverse_charge : bool
     is_cancelled : bool
     cancellation_reason : str
-    # date
     state : str
     state_code : str
     country : str
@@ -154,33 +160,73 @@ class ConsignmentCreate(BaseModel):
     hsn_no : str
     eway_no : str
     po_no : str
-    # po_date : 
+    po_date : date
     place_of_supply : str
     lr_no : str
-    # lr_date
+    lr_date : date
     transporter_name : str
-    # preparation_date
-    # issue_date 
-    # product : str
-    # product1qty : float
-    # product2_guid : str
-    # product2qty : float
-    # product3_guid : str
-    # product3qty : float
-    # product4_guid : str
-    # product4qty : float
-    # product5_guid : str
-    # product5qty : float
-    # product6_guid : str
-    # product6qty : str
+    preparation_date : date
+    issue_date : date
     bank_detail_guid : str
-    # client_guid : str 
-    # stockdetail_guid : str
-    # stockbatchinfo_guid : str
-    # itemdetail_guid : str
-    # tnc_guid : str
-    # signatory_guid : str
-    # taxation_guid : str
+    client_guid : str 
+    stockdetail_guid : str
+    stockbatchinfo_guid : str
+    itemdetail_guid : str
+    tnc_guid : str
+    signatory_guid : str
+    taxation_guid : str
+    class Config:
+        orm_mode = True
+
+class ItemCreate(BaseModel):
+    quantity : int
+    product_guid : str
+    class Config:
+        orm_mode = True
+
+class ItemOut(ItemCreate):
+    guid : str
+    class Config:
+        orm_mode = True
+
+class Items(BaseModel):
+    product : ProductOut
+    quantity : int
+    class Config:
+        orm_mode = True
+
+class ConsignmentOut(BaseModel):
+    guid : str
+    reverse_charge : bool
+    is_cancelled : bool
+    cancellation_reason : str
+    date : datetime
+    state : str
+    state_code : str
+    country : str
+    destination :str
+    rfq_item_no : str
+    rfq_item_name : str
+    goods_name : str
+    hsn_no : str
+    eway_no : str
+    po_no : str
+    po_date : date
+    place_of_supply : str
+    lr_no : str
+    lr_date : date
+    transporter_name : str
+    preparation_date : date
+    issue_date  : date
+    bank_detail_guid : str
+    client_guid : str 
+    stockdetail_guid : str
+    stockbatchinfo_guid : str
+    itemdetail_guid : str
+    tnc_guid : str
+    signatory_guid : str
+    taxation_guid : str
+    items : List[Items] 
     class Config:
         orm_mode = True
 
@@ -188,12 +234,14 @@ class ConsignmentCreate(BaseModel):
 class UserCreate(BaseModel):
     email : str
     password : str
+    tenant : str
     class Config:
         orm_mode = True
 
 class UserOut(BaseModel):
     guid : str
     email : str
+    # tenant : str
     class Config:
         orm_mode = True
 
@@ -209,3 +257,82 @@ class TokenData(BaseModel):
     class Config:
         orm_mode = True
 
+class TenantCreate(BaseModel):
+    name : str
+    vendor_code : str
+    pan_no : str
+    gst_no : str
+    cin_no : str
+    iso_no : str
+    email : str
+    phone_no : str
+    address : str
+    website : str
+    subscription : str
+    class Config:
+        orm_mode = True
+
+class TenantOut(TenantCreate):
+    guid : str
+    class Config:
+        orm_mode = True
+
+class GroupCreate(BaseModel):
+    name : str
+    buc_code : str
+    class Config:
+        orm_mode = True
+
+
+class GroupOut(GroupCreate):
+    guid : str
+    class Config:
+        orm_mode = True
+
+class SubscriptionCreate(BaseModel):
+    name : str
+    user_upper_limit : int
+    description : str
+    pros_and_cons : str
+    class Config:
+        orm_mode = True
+
+class SubscriptionOut(SubscriptionCreate):
+    guid : str
+    class Config:
+        orm_mode = True
+
+class PermissionCreate(BaseModel):
+    permission_name : str
+    class Config:
+        orm_mode = True
+
+class PermissionOut(PermissionCreate):
+    id : int
+    class Config:
+        orm_mode = True
+
+class ItemCreate(BaseModel):
+    quantity : int
+    product_guid : str
+    class Config:
+        orm_mode = True
+
+class ItemOut(ItemCreate):
+    guid : str
+    class Config:
+        orm_mode = True
+
+class PageInfo(BaseModel):
+    total : int
+    page_number : int
+    previous_page : str
+    next_page : str
+    class Config:
+        orm_mode = True
+
+class ConsignmentOutPage(BaseModel):
+    info : PageInfo
+    data : List[ConsignmentOut]
+    class Config:
+        orm_mode = True

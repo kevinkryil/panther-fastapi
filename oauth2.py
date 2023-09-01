@@ -5,9 +5,9 @@ import schemas
 from fastapi.security import OAuth2PasswordBearer
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='login')
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
+SECRET_KEY = "panther"
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+ACCESS_TOKEN_EXPIRE_MINUTES = 3000
 
 # def create_access_token(data: dict, expires_delta: timedelta | None = None):
 #     to_encode = data.copy()
@@ -45,6 +45,6 @@ def get_current_user_info(token: str = Depends(oauth2_scheme)):
     token_data = verify_access_token(token, credentials_exception)
     email = token_data.email
     guid = token_data.guid
-    print("✉️Email:",email)
+    # tenant_id =
     return token_data
 
